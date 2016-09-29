@@ -26,6 +26,7 @@ public class WfServiceImpl implements WfService{
 	public static final String OPTION_DISPATCH 	= "DP";		//流程调度
 	public static final String OPTION_VETO 			= "V";		//流程否决
 	
+	private static final String PARM_USER_ID = "userId";
 	
 	/**
 	 * 启动工作流
@@ -34,7 +35,7 @@ public class WfServiceImpl implements WfService{
 	 * @throws WfException
 	 */
 	public Integer startWorkflow(JSONObject parm) throws WfException{
-		JSONObject result = postRequest(null, WfApiConfig.WfApiOptions.StartWF.getUrl(), parm);
+		JSONObject result = postRequest(parm.getString(PARM_USER_ID), WfApiConfig.WfApiOptions.StartWF.getUrl(), parm);
 		int returnCode = result.getIntValue("return_code");
 		if(returnCode== WfApiConfig.WfApiReturnCodes.Succ.getReturnCode()){
 			return result.getInteger("wfInstNum");
@@ -66,7 +67,7 @@ public class WfServiceImpl implements WfService{
 	 * @throws WfException 
 	 */
 	public JSONObject getAwt(JSONObject parm) throws WfException{
-		return postRequest(null, WfApiConfig.WfApiOptions.StartWF.getUrl(), parm);
+		return postRequest(parm.getString(PARM_USER_ID), WfApiConfig.WfApiOptions.StartWF.getUrl(), parm);
 	}
 
 	/**
@@ -143,8 +144,10 @@ public class WfServiceImpl implements WfService{
 	}
 	
 	private JSONArray getJSONArray(String url, JSONObject parm) throws WfException{
-		return postRequest(null, url, parm).getJSONArray("records");
+		return postRequest(parm.getString(PARM_USER_ID), url, parm).getJSONArray("records");
 	}
+	
+	
 	
 	@Autowired
 	RestTemplate restTemplate;
@@ -166,33 +169,16 @@ public class WfServiceImpl implements WfService{
 
 	@Override
 	public JSONObject commitTask(String currLoginUserId, JSONObject parm) throws WfException {
-		parm.put("userId", currLoginUserId);
-		parm.put("optCode", "C");
+		parm.put(PARM_USER_ID, currLoginUserId);
+		parm.put("optCode", OPTION_COMMIT);
 		return operateTask(currLoginUserId, parm);
 	}
 
 	@Override
 	public JSONObject rejectTask(String currLoginUserId, JSONObject parm) throws WfException {
-		parm.put("userId", currLoginUserId);
-		parm.put("optCode", "RJ");
+		parm.put(PARM_USER_ID, currLoginUserId);
+		parm.put("optCode", OPTION_REJECT);
 		return operateTask(currLoginUserId, parm);
 	}
 
-	@Override
-	public void letMeDoTask(String currLoginUserId, JSONObject parm) throws WfException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void forwardTask(String currLoginUserId, JSONObject parm) throws WfException {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public JSONObject recallTask(String currLoginUserId, JSONObject parm) throws WfException {
-		// TODO Auto-generated method stub
-		return null;
-	}
 }

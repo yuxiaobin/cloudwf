@@ -4,8 +4,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 public class WfApiConfig {
 	
-//	public static final String WF_SERVER_URL = "http://localhost:8081/wf";
-	public static final String WF_SERVER_URL = "http://192.168.10.15:8383/rs-bpm-server";
+//	public static final String WF_SERVER_URL = "http://localhost:8081";
+	public static String WF_SERVER_URL = "http://192.168.10.15:8383/rs-bpm-server";
 
 	public static enum WfApiOptions{
 		GetAwt("/wfapi/awt", RequestMethod.POST),
@@ -67,6 +67,15 @@ public class WfApiConfig {
 				return SysError;
 			}
 		}
-		
 	}
+
+	public String getWF_SERVER_URL() {
+		return WF_SERVER_URL;
+	}
+
+	public void setWF_SERVER_URL(String wF_SERVER_URL) {
+		WF_SERVER_URL = wF_SERVER_URL;
+	}
+	
+	
 }

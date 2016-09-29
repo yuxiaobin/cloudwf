@@ -2,36 +2,47 @@ package com.rshare.service.wf;
 
 import java.util.Map;
 
+import org.apache.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import com.alibaba.fastjson.JSONObject;
 
 public abstract class WfBaseService {
 	
+	private static final Logger log = Logger.getLogger(WfBaseService.class);
+	
 	public static class WfOptionTypes{
 		public static final String OPT_TYPE_OPTIONS = "options";
 		public static final String OPT_TYPE_START = "start";
-		public static final String OPT_TYPE_COMMIT = "C";
-		public static final String OPT_TYPE_REJECT = "RJ";
-		public static final String OPT_TYPE_FORWARD = "F";
-		public static final String OPT_TYPE_LETMEDO = "LMD";
-		public static final String OPT_TYPE_RECALL = "RC";
+		public static final String OPT_TYPE_COMMIT = WFConstants.OptTypes.COMMIT;
+		public static final String OPT_TYPE_REJECT = WFConstants.OptTypes.REJECT;
+		public static final String OPT_TYPE_FORWARD = WFConstants.OptTypes.FORWARD;
+		public static final String OPT_TYPE_LETMEDO = WFConstants.OptTypes.LET_ME_DO;
+		public static final String OPT_TYPE_RECALL = WFConstants.OptTypes.RECALL;
 	}
+	
+	private static final String PARAM_OPT_CODE = "optCode";
+	private static final String PARAM_WF_INST_NUM = "wfInstNum";
+	private static final String PARAM_GNMK_ID = "gnmkId";
 	
 	@Autowired
 	WfService wfService;
 	
 	public Map<String,Object> doBeforeStart(Map<String,Object> parm) throws WfException{
+		log.info("===========doBeforeStart===========");
 		return parm;
 	}
 	public Map<String,Object> doAfterStart(Map<String,Object> parm) throws WfException{
+		log.info("===========doAfterStart===========");
 		return parm;
 	}
 	
 	public Map<String,Object> doBeforeCommit(Map<String,Object> parm) throws WfException{
+		log.info("===========doBeforeCommit===========");
 		return parm;
 	}
 	public Map<String,Object> doAfterCommit(Map<String,Object> parm) throws WfException{
+		log.info("===========doAfterCommit===========");
 		return parm;
 	}
 	
@@ -56,33 +67,54 @@ public abstract class WfBaseService {
 		return parm;
 	}
 	
-
+	/**
+	 * 启动工作流
+	 * @param parm
+	 * @return JSON: {wfInstNum:3}
+	 * @throws WfException
+	 */
+	public JSONObject startWorkflow(Map<String,Object> parm) throws WfException{
+		parm.put(PARAM_OPT_CODE, WfOptionTypes.OPT_TYPE_START);
+		return execute(parm);
+	}
+	
+	public JSONObject viewWfHistory(Map<String,Object> parm) throws WfException{
+		JSONObject result = new JSONObject();
+		result.put("history", wfService.getWfHistory((JSONObject)JSONObject.toJSON(parm)));
+		return result;
+	}
+	/**
+	 * 工作流调用总入口
+	 * @param parm
+	 * @return
+	 * @throws WfException
+	 */
 	public JSONObject execute(Map<String,Object> parm) throws WfException{
-		String optType = (String) parm.get("optType");
-		String gnmkId = (String) parm.get("gnmkId");
-		Integer wfInstNum = (Integer) parm.get("wfInstNum");
+		String optCode = (String) parm.get(PARAM_OPT_CODE);
+		String gnmkId = (String) parm.get(PARAM_GNMK_ID);
+		Integer wfInstNum = (Integer) parm.get(PARAM_WF_INST_NUM);
 		String userId = (String) parm.get("userId");
 		Map<String,Object> befResult = null;
 		JSONObject json = null;
 		JSONObject result = null;
-		switch (optType) {
+		switch (optCode) {
 		case WfOptionTypes.OPT_TYPE_START:
 			befResult = doBeforeStart(parm);
 			if(befResult!=null){
 				json = (JSONObject) JSONObject.toJSON(befResult);
-				json.put("gnmkId", gnmkId);
+				json.put(PARAM_GNMK_ID, gnmkId);
 			}else{
 				json = (JSONObject) JSONObject.toJSON(parm);
 			}
-			json.put("wfInstNum", wfService.startWorkflow(json));
+			json.put(PARAM_WF_INST_NUM, wfService.startWorkflow(json));
 			doAfterStart(json);
-			break;
+			return json;
 		case WfOptionTypes.OPT_TYPE_COMMIT:
 			befResult = doBeforeCommit(parm);
 			if(befResult!=null){
 				json = (JSONObject) JSONObject.toJSON(befResult);
-				json.put("gnmkId", gnmkId);
-				json.put("wfInstNum", wfInstNum);
+				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_WF_INST_NUM, wfInstNum);
 			}else{
 				json = (JSONObject) JSONObject.toJSON(parm);
 			}
@@ -91,25 +123,59 @@ public abstract class WfBaseService {
 			doAfterCommit(json);
 			break;
 		case WfOptionTypes.OPT_TYPE_REJECT:
-			//TODO:
+			befResult = doBeforeReject(parm);
+			if(befResult!=null){
+				json = (JSONObject) JSONObject.toJSON(befResult);
+				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_WF_INST_NUM, wfInstNum);
+			}else{
+				json = (JSONObject) JSONObject.toJSON(parm);
+			}
+			json.put(PARAM_OPT_CODE, WfOptionTypes.OPT_TYPE_REJECT);
+			result = wfService.operateTask(userId, json);
+			json.putAll(result);
+			doAfterReject(json);
 			break;
 		case WfOptionTypes.OPT_TYPE_FORWARD:
-			//TODO:
+			befResult = doBeforeForward(parm);
+			if(befResult!=null){
+				json = (JSONObject) JSONObject.toJSON(befResult);
+				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_WF_INST_NUM, wfInstNum);
+			}else{
+				json = (JSONObject) JSONObject.toJSON(parm);
+			}
+			json.put(PARAM_OPT_CODE, WfOptionTypes.OPT_TYPE_FORWARD);
+			result = wfService.operateTask(userId, json);
+			json.putAll(result);
+			doAfterForward(json);
 			break;
 		case WfOptionTypes.OPT_TYPE_LETMEDO:
-			//TODO:
+			json = (JSONObject) JSONObject.toJSON(parm);
+			json.put(PARAM_OPT_CODE, WfOptionTypes.OPT_TYPE_LETMEDO);
+			result = wfService.operateTask(userId, json);
 			break;
 		case WfOptionTypes.OPT_TYPE_RECALL:
-			//TODO:
+			befResult = doBeforeRecall(parm);
+			if(befResult!=null){
+				json = (JSONObject) JSONObject.toJSON(befResult);
+				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_WF_INST_NUM, wfInstNum);
+			}else{
+				json = (JSONObject) JSONObject.toJSON(parm);
+			}
+			json.put(PARAM_OPT_CODE, WfOptionTypes.OPT_TYPE_RECALL);
+			result = wfService.operateTask(userId, json);
+			json.putAll(result);
+			doAfterRecall(json);
 			break;
 		case WfOptionTypes.OPT_TYPE_OPTIONS:
-			JSONObject jsonOpts = (JSONObject) JSONObject.toJSON(parm);
+			json = (JSONObject) JSONObject.toJSON(parm);
 			result = new JSONObject();
-			result.put("array", wfService.getTaskOptions(jsonOpts));//array
-			return result;
+			result.put("array", wfService.getTaskOptions(json));//array
 		default:
 			break;
 		}
-		return null;
+		return result;
 	}
 }

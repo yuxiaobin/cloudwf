@@ -1,17 +1,9 @@
 package com.rshare.controller.wf;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
-import com.alibaba.fastjson.JSONObject;
-import com.rshare.service.wf.WfException;
 import com.rshare.service.wf.WfService;
 
 @Controller
@@ -30,7 +22,7 @@ public class WfSampleController {
 		return wfIndex();
 	}
 	
-	@RequestMapping(value="/operate")
+	/*@RequestMapping(value="/operate")
 	@ResponseBody
 	public Object testWf(@RequestBody JSONObject reqParm, HttpSession session, HttpServletRequest req) throws WfException{
 		String gnmkId = reqParm.getString("gnmkId");
@@ -78,5 +70,5 @@ public class WfSampleController {
 			break;
 		}
 		return "success";
-	}
+	}*/
 }

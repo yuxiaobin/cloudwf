@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:context="http://www.springframework.org/schema/context"
+	xmlns:mvc="http://www.springframework.org/schema/mvc" xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+	http://www.springframework.org/schema/beans/spring-beans.xsd  
+	http://www.springframework.org/schema/context
+	http://www.springframework.org/schema/context/spring-context-3.0.xsd
+	http://www.springframework.org/schema/mvc
+	http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
+
+
+
+	<!-- 配置RestTemplate -->
+	<!--Http client Factory -->
+	<bean id="httpClientFactory"
+		class="org.springframework.http.client.SimpleClientHttpRequestFactory">
+		<property name="connectTimeout" value="15000" />
+		<property name="readTimeout" value="5000" />
+	</bean>
+
+	<!--RestTemplate -->
+	<bean id="restTemplate" class="org.springframework.web.client.RestTemplate">
+		<constructor-arg ref="httpClientFactory" />
+	</bean>
+
+
+	<bean id="configProperties"
+		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
+		<property name="locations">
+			<list>
+				<value>classpath*:wf-config.properties</value>
+			</list>
+		</property>
+	</bean>
+
+	<bean id="serviceFactory" class="com.rshare.service.wf.WfServiceFactory">
+	</bean>
+
+		<!-- 
+	<bean class="com.rshare.service.wf.WfApiConfig" lazy-init="false">
+		<property name="WF_SERVER_URL" value="http://localhost:8081"/> 
+	</bean>
+		-->
+</beans>

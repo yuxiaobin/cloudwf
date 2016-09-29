@@ -36,7 +36,8 @@ public class WfServiceFactory implements BeanFactoryAware {
 		map.clear();
 		try (InputStream is = new ClassPathResource("wf-config.properties").getInputStream();) {
 			if(is==null){
-				throw new WfException("configNotFoundError", "wf-config.properties not found in classpath");
+				log.warn("wf-config.properties not found in classpath, init Workflow Impl Service ignored");
+				return;
 			}
 			prop.load(is);
 			Iterator<String> it = prop.stringPropertyNames().iterator();

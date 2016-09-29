@@ -103,7 +103,7 @@ public interface WfService {
 	public JSONObject commitTask(String currLoginUserId, JSONObject parm) throws WfException;
 	
 	/**
-	 * 提交事务
+	 * 退回事务
 	 * @param currLoginUserId
 	 * @param parm : {
 	 * 		"gnmkId": "abcId",
@@ -119,10 +119,10 @@ public interface WfService {
 	public JSONObject rejectTask(String currLoginUserId, JSONObject parm) throws WfException;
 	
 	
-	public void letMeDoTask(String currLoginUserId, JSONObject parm) throws WfException;
-	public void forwardTask(String currLoginUserId, JSONObject parm) throws WfException;
-	public JSONObject recallTask(String currLoginUserId, JSONObject parm) throws WfException;
-	
+//	public void letMeDoTask(String currLoginUserId, JSONObject parm) throws WfException;
+//	public void forwardTask(String currLoginUserId, JSONObject parm) throws WfException;
+//	public JSONObject recallTask(String currLoginUserId, JSONObject parm) throws WfException;
+//	
 	/**
 	 * 获取工作流历史记录
 	 * @param parm : {
