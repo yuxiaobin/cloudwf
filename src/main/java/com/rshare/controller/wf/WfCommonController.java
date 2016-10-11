@@ -1,5 +1,8 @@
 package com.rshare.controller.wf;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
@@ -14,11 +17,11 @@ import org.springframework.web.util.HtmlUtils;
 
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.rshare.cloudapi.domain.sys.Users;
 import com.rshare.service.wf.WfApiConfig;
 import com.rshare.service.wf.WfBaseService;
 import com.rshare.service.wf.WfBaseService.WfOptionTypes;
 import com.rshare.service.wf.WfException;
+import com.rshare.service.wf.WfService;
 import com.rshare.service.wf.WfServiceFactory;
 
 @Controller
@@ -27,7 +30,7 @@ public class WfCommonController {
 	
 	private static final Logger log = Logger.getLogger(WfCommonController.class);
 	
-	private static final String PARM_NAME_GNMKID = "gnmkId";
+	private static final String PARM_NAME_REFMKID = "refMkid";
 	private static final String PARM_NAME_WFINSTNUM = "wfInstNum";
 	private static final String PARM_NAME_OPTCODE = "optCode";
 	private static final String PARM_NAME_USERID = "userId";
@@ -40,9 +43,51 @@ public class WfCommonController {
 	@Autowired
 	WfServiceFactory serviceFactory;
 	
+	private static Method getUserId = null;
+	
+	static{
+		try {
+			Method[] methods = Class.forName("com.rshare.cloudapi.domain.sys.Users").getDeclaredMethods();
+			for(Method md:methods){
+				if(md.getName().equals("getId")){
+					getUserId = md;
+					break;
+				}
+			}
+		} catch (SecurityException e) {
+			log.error(e);
+			e.printStackTrace();
+		} catch (ClassNotFoundException e) {
+			log.error(e);
+			e.printStackTrace();
+		} catch(Exception e){
+			log.error(e);
+			e.printStackTrace();
+		}
+	}
+	
+	
+	private String getUserIdFromSession(HttpSession session) {
+		Object user = session.getAttribute("userinfo");
+		if(user==null || getUserId==null){
+			log.warn("getUserIdFromSession(): user is null or getUserId method is null");
+			return null;
+		}
+		try {
+			return (String) getUserId.invoke(user);
+		} catch (IllegalAccessException e) {
+			e.printStackTrace();
+		} catch (IllegalArgumentException e) {
+			e.printStackTrace();
+		} catch (InvocationTargetException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
 	/**
 	 * 
-	 * @param param	{gnmkId:"abc", wfInstNum:1}
+	 * @param param	{refMkid:"abc", wfInstNum:1}
 	 * @param session
 	 * @return
 	 * @throws WfException
@@ -50,19 +95,19 @@ public class WfCommonController {
 	@RequestMapping(value="/options")
 	@ResponseBody
 	public Object getOptions(@RequestBody JSONObject param, HttpSession session) {
-		String gnmkId = param.getString(PARM_NAME_GNMKID);
+		String refMkid = param.getString(PARM_NAME_REFMKID);
 		Integer wfInstNum = param.getInteger(PARM_NAME_WFINSTNUM);
-		if(StringUtils.isEmpty(gnmkId) || wfInstNum==null){
-			log.warn("gnmkId or wfInstNum is empty, load options ignored");
+		if(StringUtils.isEmpty(refMkid) || wfInstNum==null){
+			log.warn("refMkid or wfInstNum is empty, load options ignored");
 			return new JSONArray(0);
 		}
 		param.put(PARM_NAME_OPTCODE, WfBaseService.WfOptionTypes.OPT_TYPE_OPTIONS);
-		Users user = (Users) session.getAttribute("userinfo");
-		if(user!=null){
-			param.put("userId", user.getId());
+		String userId = getUserIdFromSession(session);
+		if(userId!=null){
+			param.put("userId", userId);
 		}
 		try{
-			WfBaseService wfService = serviceFactory.getBean(gnmkId);
+			WfBaseService wfService = serviceFactory.getBean(refMkid);
 			return wfService.execute(param).getJSONArray("array");
 		}catch(WfException e){
 			log.error("getOptions(): error when get options.", e);
@@ -80,26 +125,29 @@ public class WfCommonController {
 	 */
 	@RequestMapping(value="/task")
 	public String loadOperatePage(HttpServletRequest req,HttpSession session) throws WfException{
-		String gnmkId = req.getParameter(PARM_NAME_GNMKID);
+		String refMkid = req.getParameter(PARM_NAME_REFMKID);
 		String wfInstNumStr = req.getParameter(PARM_NAME_WFINSTNUM);
 		String optCode = req.getParameter(PARM_NAME_OPTCODE);
 		String userId = req.getParameter(PARM_NAME_USERID);
 		String basePath = req.getParameter(PARM_NAME_BASE_PATH);//http://[ip:localhost]:8080/clouderp
-		Users user = (Users) session.getAttribute("userinfo");
-		if(user!=null && StringUtils.isEmpty(userId)){
-			userId = user.getId();
+		String userIdFromSession = getUserIdFromSession(session);
+		if(userIdFromSession!=null && StringUtils.isEmpty(userId)){
+			userId = userIdFromSession;
 		}
-		if(StringUtils.isEmpty(gnmkId) || StringUtils.isEmpty(wfInstNumStr) 
+		if(StringUtils.isEmpty(refMkid) || StringUtils.isEmpty(wfInstNumStr) 
 				|| StringUtils.isEmpty(optCode) || StringUtils.isEmpty(userId)){
 			throw new WfException("InvalidParameter","参数为空");
 		}
 		StringBuilder sb = new StringBuilder(WfApiConfig.WfApiOptions.OpenOperateTask.getUrl());
 		sb.append("?")
-			.append(PARM_NAME_GNMKID).append("=").append(gnmkId)
+			.append(PARM_NAME_REFMKID).append("=").append(refMkid)
 			.append("&").append(PARM_NAME_WFINSTNUM).append("=").append(wfInstNumStr)
 			.append("&").append(PARM_NAME_OPTCODE).append("=").append(optCode)
 			.append("&").append(PARM_NAME_USERID).append("=").append(userId);
 		if(!StringUtils.isEmpty(basePath)){
+			if(basePath.endsWith("/")){
+				basePath = basePath.substring(0, basePath.length()-1);
+			}
 			String full_path = basePath+"/wf/task/operate.do";
 			sb.append("&").append(PARM_NAME_CALLBACK_URL).append("=").append(HtmlUtils.htmlEscape(full_path));
 		}
@@ -115,8 +163,8 @@ public class WfCommonController {
 	@RequestMapping(value="/task/operate")
 	@ResponseBody
 	public Object operateTask(HttpServletRequest req) throws WfException{
-		String gnmkId = req.getParameter(PARM_NAME_GNMKID);
-		WfBaseService wfService = serviceFactory.getBean(gnmkId);
+		String refMkid = req.getParameter(PARM_NAME_REFMKID);
+		WfBaseService wfService = serviceFactory.getBean(refMkid);
 		String optCode = req.getParameter(PARM_NAME_OPTCODE);
 		if(StringUtils.isEmpty(optCode)){
 			throw new WfException("InvalidOptCode","Invalid optCode null");
@@ -133,7 +181,7 @@ public class WfCommonController {
 		}
 		JSONObject parm = new JSONObject();
 		parm.put(PARM_NAME_USERID, req.getParameter(PARM_NAME_USERID));
-		parm.put(PARM_NAME_GNMKID, gnmkId);
+		parm.put(PARM_NAME_REFMKID, refMkid);
 		parm.put(PARM_NAME_WFINSTNUM, wfInstNum);
 		parm.put(PARM_NAME_OPTCODE, req.getParameter(PARM_NAME_OPTCODE));
 		parm.put(PARM_NAME_COMMENTS, req.getParameter(PARM_NAME_COMMENTS));
@@ -154,26 +202,43 @@ public class WfCommonController {
 	@ResponseBody
 	public Object testStartWf(@RequestBody JSONObject parm,HttpSession session) throws WfException{
 		String userId = parm.getString(PARM_NAME_USERID);
-		String gnmkId = parm.getString(PARM_NAME_GNMKID);
+		String refMkid = parm.getString(PARM_NAME_REFMKID);
 		String optCode = parm.getString(PARM_NAME_OPTCODE);
-		Users user = (Users) session.getAttribute("userinfo");
-		if(user!=null && StringUtils.isEmpty(userId)){
-			userId = user.getId();
+		String userIdFromSession = getUserIdFromSession(session);
+		if(userIdFromSession!=null && StringUtils.isEmpty(userId)){
+			userId = userIdFromSession;
 		}
 		if(userId==null){
 			userId = "staff1";
 		}
-		if(gnmkId ==null){
-			gnmkId = "erpTest";
+		if(refMkid ==null){
+			refMkid = "erpTest";
 		}
 		if(optCode==null){
 			optCode = WfOptionTypes.OPT_TYPE_START;
 		}
-		WfBaseService wfService = serviceFactory.getBean(gnmkId);
+		WfBaseService wfService = serviceFactory.getBean(refMkid);
 		parm.put(PARM_NAME_OPTCODE, optCode);
-		parm.put(PARM_NAME_GNMKID, gnmkId);
+		parm.put(PARM_NAME_REFMKID, refMkid);
 		parm.put(PARM_NAME_USERID, userId);
 		return wfService.execute(parm);
+	}
+	
+	@Autowired
+	WfService wfService;
+	
+	@RequestMapping(value="/awt")
+	@ResponseBody
+	public Object getAwt(HttpSession session) throws WfException {
+		String userIdFromSession = getUserIdFromSession(session);
+		if(userIdFromSession!=null){
+			JSONObject param = new JSONObject();
+			param.put("userId", userIdFromSession);
+			return wfService.getAwt(param);
+		}else{
+			log.error("getAwt(): cannot get userId");
+			throw new WfException("InvalidUser","Cannot get userId");
+		}
 	}
 	
 }

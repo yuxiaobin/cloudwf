@@ -9,8 +9,6 @@
 	http://www.springframework.org/schema/mvc
 	http://www.springframework.org/schema/mvc/spring-mvc-3.0.xsd">
 
-
-
 	<!-- 配置RestTemplate -->
 	<!--Http client Factory -->
 	<bean id="httpClientFactory"
@@ -24,22 +22,18 @@
 		<constructor-arg ref="httpClientFactory" />
 	</bean>
 
+	<bean id="serviceFactory" class="com.rshare.service.wf.WfServiceFactory">
+	</bean>
 
-	<bean id="configProperties"
-		class="org.springframework.beans.factory.config.PropertiesFactoryBean">
-		<property name="locations">
+	<bean id="buzEntityFactory" class="com.rshare.service.wf.annotations.WfEntityBeanFactory">
+		<property name="entityPackages">
 			<list>
-				<value>classpath*:wf-config.properties</value>
+				<value>com.rshare.cloudapi.domain</value>
 			</list>
 		</property>
 	</bean>
 
-	<bean id="serviceFactory" class="com.rshare.service.wf.WfServiceFactory">
-	</bean>
-
-		<!-- 
-	<bean class="com.rshare.service.wf.WfApiConfig" lazy-init="false">
-		<property name="WF_SERVER_URL" value="http://localhost:8081"/> 
-	</bean>
-		-->
+	<!-- Here is to configure wf BPM server url <bean class="com.rshare.service.wf.WfApiConfig" 
+		lazy-init="false"> <property name="WF_SERVER_URL" value="http://localhost:8081"/> 
+		</bean> -->
 </beans>

@@ -30,7 +30,7 @@ public class WfServiceImpl implements WfService{
 	
 	/**
 	 * 启动工作流
-	 * @param parm: {userId:xxx, gnmkId:xxx}
+	 * @param parm: {userId:xxx, refMkid:xxx}
 	 * @return {return_code:0, wfInstNum:3}
 	 * @throws WfException
 	 */
@@ -59,7 +59,7 @@ public class WfServiceImpl implements WfService{
 			            "awtEnd": 1473908961000,
 			            "taskDescp": "tx1",
 			            "preOperator": "userIdXXX",
-			            "gnmkId": "xxxid"
+			            "refMkid": "xxxid"
 			        }
     			]
 	 * 
@@ -73,7 +73,7 @@ public class WfServiceImpl implements WfService{
 	/**
 	 * 获取下一步操作的事务ID
 	 * 
-	 * @param parm : {gnmkId:xx, wfInstNum:3, optCode:C}
+	 * @param parm : {refMkid:xx, wfInstNum:3, optCode:C}
 	 * @return		json : {return_code:0, records:[{taskId:"99834c2363b948d3b98e08966ae7f56f", taskType:"user-task",taskDescp:"task descp1"},{taskId:"...", taskType:"user-task",taskDescp:"task descp2"}]} 
 	 * @throws WfException
 	 */
@@ -83,7 +83,7 @@ public class WfServiceImpl implements WfService{
 	
 	/**
 	 * 获取事务可操作的功能列表
-	 * @param parm ： {“userId”:"manager1",“wfInstNum”:" 1",“gnmkId”:”abc”}
+	 * @param parm ： {“userId”:"manager1",“wfInstNum”:" 1",“refMkid”:”abc”}
 	 * @return array : [
         {
             "disflag": false,
@@ -105,7 +105,7 @@ public class WfServiceImpl implements WfService{
 	 * @param currLoginUserId
 	 * @param parm : {
 	 * 		"userId": "staff1",
-	 * 		"gnmkId": "abc",
+	 * 		"refMkid": "abc",
 	 * 		"wfInstNum": 1,
 	 * 		"optCode": "C",
 	 * 		"comments": "your comments here",
@@ -122,7 +122,7 @@ public class WfServiceImpl implements WfService{
 	/**
 	 * 获取工作流历史记录
 	 * @param parm : {
-	 * 		“gnmkId”:”abc”
+	 * 		“refMkid”:”abc”
 	 * 		“wfInstNum”:1
 	 * 		}
 	 * @return array: [

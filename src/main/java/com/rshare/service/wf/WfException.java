@@ -36,10 +36,14 @@ public class WfException extends Throwable{
 	public void setErrorMsg(String errorMsg) {
 		this.errorMsg = errorMsg;
 	}
-	@Override
-	public synchronized Throwable fillInStackTrace() {
-		return this;
-	}
+//	@Override
+//	public synchronized Throwable fillInStackTrace() {
+//		return this;
+//	}
 
+	@Override
+	public String toString() {
+		return "WfException [errorCode=" + errorCode + ", errorMsg=" + errorMsg + "]";
+	}
 	
 }

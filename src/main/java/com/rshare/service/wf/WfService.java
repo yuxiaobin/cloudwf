@@ -9,7 +9,7 @@ public interface WfService {
 	
 	/**
 	 * 启动工作流
-	 * @param parm: {userId:xxx, gnmkId:xxx}
+	 * @param parm: {userId:xxx, refMkid:xxx}
 	 * @return {return_code:0, wfInstNum:3}
 	 * @throws WfException > errorCode:
 	 * 		1：非法参数
@@ -36,7 +36,7 @@ public interface WfService {
 			            "awtEnd": 1473908961000,
 			            "taskDescp": "tx1",
 			            "preOperator": "userIdXXX",
-			            "gnmkId": "xxxid"
+			            "refMkid": "xxxid"
 			        }
     			]
 	 * 
@@ -48,7 +48,7 @@ public interface WfService {
 	/**
 	 * 获取下一步操作的事务ID
 	 * 
-	 * @param parm : {gnmkId:xx, wfInstNum:3, optCode:C}
+	 * @param parm : {refMkid:xx, wfInstNum:3, optCode:C}
 	 * @return		json : {return_code:0, records:[{taskId:"99834c2363b948d3b98e08966ae7f56f", taskType:"user-task",taskDescp:"task descp1"},{taskId:"...", taskType:"user-task",taskDescp:"task descp2"}]} 
 	 * @throws WfException
 	 */
@@ -56,7 +56,7 @@ public interface WfService {
 	
 	/**
 	 * 获取事务可操作的功能列表
-	 * @param parm ： {“userId”:"manager1",“wfInstNum”:" 1",“gnmkId”:”abc”}
+	 * @param parm ： {“userId”:"manager1",“wfInstNum”:" 1",“refMkid”:”abc”}
 	 * @return array : [
         {
             "disflag": false,
@@ -76,7 +76,7 @@ public interface WfService {
 	 * @param currLoginUserId
 	 * @param parm : {
 	 * 		"userId": "staff1",
-	 * 		"gnmkId": "abc",
+	 * 		"refMkid": "abc",
 	 * 		"wfInstNum": 1,
 	 * 		"optCode": "C",
 	 * 		"comments": "your comments here",
@@ -92,7 +92,7 @@ public interface WfService {
 	 * 提交事务
 	 * @param currLoginUserId
 	 * @param parm : {
-	 * 		"gnmkId": "abcId",
+	 * 		"refMkid": "abcId",
 	 * 		"wfInstNum": 1,
 	 * 		"comments": "your comments here",
 	 * 		"nextUserIds": "manager1,manager2,manager3"
@@ -106,7 +106,7 @@ public interface WfService {
 	 * 退回事务
 	 * @param currLoginUserId
 	 * @param parm : {
-	 * 		"gnmkId": "abcId",
+	 * 		"refMkid": "abcId",
 	 * 		"wfInstNum": 1,
 	 * 		"comments": "your comments here",
 	 * 		"back2First": "false",
@@ -126,7 +126,7 @@ public interface WfService {
 	/**
 	 * 获取工作流历史记录
 	 * @param parm : {
-	 * 		“gnmkId”:”abc”
+	 * 		“refMkid”:”abc”
 	 * 		“wfInstNum”:1
 	 * 		}
 	 * @return array: [

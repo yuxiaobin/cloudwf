@@ -23,7 +23,7 @@ public abstract class WfBaseService {
 	
 	private static final String PARAM_OPT_CODE = "optCode";
 	private static final String PARAM_WF_INST_NUM = "wfInstNum";
-	private static final String PARAM_GNMK_ID = "gnmkId";
+	private static final String PARAM_REFMK_ID = "refMkid";
 	
 	@Autowired
 	WfService wfService;
@@ -91,7 +91,7 @@ public abstract class WfBaseService {
 	 */
 	public JSONObject execute(Map<String,Object> parm) throws WfException{
 		String optCode = (String) parm.get(PARAM_OPT_CODE);
-		String gnmkId = (String) parm.get(PARAM_GNMK_ID);
+		String refMkid = (String) parm.get(PARAM_REFMK_ID);
 		Integer wfInstNum = (Integer) parm.get(PARAM_WF_INST_NUM);
 		String userId = (String) parm.get("userId");
 		Map<String,Object> befResult = null;
@@ -102,7 +102,7 @@ public abstract class WfBaseService {
 			befResult = doBeforeStart(parm);
 			if(befResult!=null){
 				json = (JSONObject) JSONObject.toJSON(befResult);
-				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_REFMK_ID, refMkid);
 			}else{
 				json = (JSONObject) JSONObject.toJSON(parm);
 			}
@@ -113,7 +113,7 @@ public abstract class WfBaseService {
 			befResult = doBeforeCommit(parm);
 			if(befResult!=null){
 				json = (JSONObject) JSONObject.toJSON(befResult);
-				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_REFMK_ID, refMkid);
 				json.put(PARAM_WF_INST_NUM, wfInstNum);
 			}else{
 				json = (JSONObject) JSONObject.toJSON(parm);
@@ -126,7 +126,7 @@ public abstract class WfBaseService {
 			befResult = doBeforeReject(parm);
 			if(befResult!=null){
 				json = (JSONObject) JSONObject.toJSON(befResult);
-				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_REFMK_ID, refMkid);
 				json.put(PARAM_WF_INST_NUM, wfInstNum);
 			}else{
 				json = (JSONObject) JSONObject.toJSON(parm);
@@ -140,7 +140,7 @@ public abstract class WfBaseService {
 			befResult = doBeforeForward(parm);
 			if(befResult!=null){
 				json = (JSONObject) JSONObject.toJSON(befResult);
-				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_REFMK_ID, refMkid);
 				json.put(PARAM_WF_INST_NUM, wfInstNum);
 			}else{
 				json = (JSONObject) JSONObject.toJSON(parm);
@@ -159,7 +159,7 @@ public abstract class WfBaseService {
 			befResult = doBeforeRecall(parm);
 			if(befResult!=null){
 				json = (JSONObject) JSONObject.toJSON(befResult);
-				json.put(PARAM_GNMK_ID, gnmkId);
+				json.put(PARAM_REFMK_ID, refMkid);
 				json.put(PARAM_WF_INST_NUM, wfInstNum);
 			}else{
 				json = (JSONObject) JSONObject.toJSON(parm);
@@ -173,8 +173,11 @@ public abstract class WfBaseService {
 			json = (JSONObject) JSONObject.toJSON(parm);
 			result = new JSONObject();
 			result.put("array", wfService.getTaskOptions(json));//array
-		default:
 			break;
+		default:
+			String errorMsg = "unrecognized optCode="+optCode;
+			log.error(errorMsg);
+			throw new WfException("InvalidOptCode", errorMsg);
 		}
 		return result;
 	}
